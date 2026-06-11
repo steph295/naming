@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RD Hub — Payment Method (Redesign)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; font-size: 14px; color: #1a1a2e; }
+
+    /* ── PROTOTYPE BANNER ── */
+    .proto-banner {
+      background: #111827;
+      color: rgba(255,255,255,0.7);
+      font-size: 11.5px;
+      padding: 0 20px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .proto-badge {
+      background: rgba(190,19,55,0.35);
+      color: #fca5a5;
+      border-radius: 3px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .proto-label { color: rgba(255,255,255,0.5); flex-shrink: 0; }
+    .proto-states { display: flex; gap: 4px; }
+    .proto-state-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 4px 11px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.1s;
+    }
+    .proto-state-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+    .proto-state-btn.active { background: #BE1337; border-color: #BE1337; color: white; font-weight: 500; }
+    .proto-hint { margin-left: auto; font-size: 11px; color: rgba(255,255,255,0.35); }
+
+    /* ── NAV ── */
+    nav {
+      background: #1a1a2e;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 0;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: #BE1337;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: white;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+      margin-right: 18px;
+    }
+    .nav-items { display: flex; align-items: stretch; height: 56px; gap: 0; }
+    .nav-trigger {
+      background: none; border: none;
+      color: rgba(255,255,255,0.65);
+      font-family: inherit; font-size: 13px;
+      padding: 0 14px;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 100%;
+    }
+    .nav-trigger:hover { color: white; }
+    .nav-trigger.active { color: #BE1337; font-weight: 500; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .viewing-label { font-size: 11.5px; color: rgba(255,255,255,0.5); }
+    .viewing-name { font-size: 12px; font-weight: 600; color: white; }
+    .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #4a5568;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: white;
+    }
+
+    /* ── SUBNAV ── */
+    .subnav {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      padding: 0 20px;
+    }
+    .subnav a {
+      font-size: 12px;
+      color: #6b7280;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    .subnav a.active { color: #BE1337; border-bottom-color: #BE1337; font-weight: 500; }
+
+    /* ── FLOW ── */
+    .flow-body { display: flex; min-height: calc(100vh - 132px); }
+
+    aside {
+      width: 210px;
+      padding: 28px 20px;
+      flex-shrink: 0;
+      background: #f0f2f5;
+      border-right: 1px solid #e5e7eb;
+    }
+    .stepper-label {
+      font-size: 10px; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 18px; font-weight: 600;
+    }
+    .step { display: flex; gap: 10px; align-items: flex-start; }
+    .step-col { display: flex; flex-direction: column; align-items: center; }
+    .step-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .step-dot.done  { background: #BE1337; color: white; }
+    .step-dot.active { background: #BE1337; color: white; }
+    .step-dot.inactive { background: white; border: 1px solid #d1d5db; color: #9ca3af; }
+    .step-line { width: 1.5px; height: 32px; background: #e5e7eb; margin: 3px 0; }
+    .step-line.done { background: #BE1337; opacity: 0.3; }
+    .step-text { font-size: 12px; padding-top: 5px; }
+    .step-text.done    { color: #9ca3af; }
+    .step-text.active  { color: #BE1337; font-weight: 600; }
+    .step-text.inactive { color: #9ca3af; }
+
+    main { flex: 1; padding: 28px 32px; max-width: 680px; }
+
+    h2 { font-size: 17px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+    .page-sub { font-size: 12px; color: #6b7280; margin-bottom: 18px; line-height: 1.5; }
+
+    /* ── CARDS ── */
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+    .card h3 { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 14px; }
+    .review-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-row .lbl { color: #6b7280; }
+    .review-row .val { font-weight: 500; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; }
+    .summary-row .lbl { color: #6b7280; }
+    .summary-row.total {
+      font-weight: 600;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 10px; margin-top: 4px;
+    }
+
+    /* ── RADIO ROWS ── */
+    .radio-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .radio-row:first-of-type { padding-top: 0; }
+    /* last *visible* row loses its border — handled via JS toggling .is-last */
+    .radio-row.is-last { border-bottom: none; padding-bottom: 0; }
+    .rl { font-size: 13px; font-weight: 500; color: #1a1a2e; line-height: 1.4; }
+    input[type="radio"] { accent-color: #BE1337; margin-top: 2px; flex-shrink: 0; }
+
+    /* ── SUB PANELS ── */
+    .sub-panel { margin-top: 10px; display: none; }
+    .sub-panel.open { display: block; }
+
+    /* ── ACCOUNT SELECT PANEL ── */
+    .pay-acct-panel { display: flex; flex-direction: column; gap: 10px; }
+    .pay-acct-help {
+      font-size: 11.5px; color: #6b7280;
+      line-height: 1.45;
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+    .pay-acct-help svg { width: 13px; height: 13px; stroke: #9ca3af; fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 2px; }
+    .pay-acct-select {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      color: #1a1a2e;
+      appearance: auto;
+    }
+    .pay-acct-select:focus { outline: none; border-color: #BE1337; box-shadow: 0 0 0 3px rgba(190,19,55,0.08); }
+
+    /* ── ACCOUNT DETAIL: SINGLE ── */
+    .acct-detail-single {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 11px 13px;
+      background: #fafbfc;
+      font-size: 12.5px;
+      color: #374151;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .acct-detail-row { display: flex; align-items: flex-start; gap: 8px; }
+    .acct-detail-row svg { width: 14px; height: 14px; stroke: #15803d; fill: none; stroke-width: 2.4; flex-shrink: 0; margin-top: 2px; }
+    .dd-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px;
+      padding: 4px 9px;
+      font-size: 11px;
+      color: #15803d;
+      font-weight: 500;
+      width: fit-content;
+    }
+    .dd-badge svg { width: 11px; height: 11px; stroke: #15803d; fill: none; stroke-width: 2.5; }
+
+    /* ── ACCOUNT DETAIL: SPLIT ── */
+    .acct-detail-split {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 12.5px;
+    }
+    .split-head {
+      padding: 10px 13px;
+      background: #fef9ec;
+      border-bottom: 1px solid #f3e2b6;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      color: #6b5a2a;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .split-head svg { width: 14px; height: 14px; stroke: #8a6918; fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 2px; }
+    .split-head strong { color: #1a1a2e; }
+    .split-partners { list-style: none; margin: 0; padding: 4px 0; }
+    .split-partners li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 13px;
+      color: #1a1a2e;
+    }
+    .split-partners li + li { border-top: 1px solid #f3f4f6; }
+    .p-name { font-weight: 500; }
+    .p-meta { font-size: 11px; color: #6b7280; font-weight: 400; margin-left: 6px; }
+    .p-share { font-variant-numeric: tabular-nums; color: #374151; font-weight: 500; white-space: nowrap; }
+    .split-foot {
+      padding: 9px 13px;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    /* ── DD FORM ── */
+    .dd-form { display: flex; flex-direction: column; gap: 10px; }
+    .field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .field > label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-row { display: flex; gap: 10px; }
+    input[type="text"] {
+      width: 100%;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #1a1a2e;
+      font-family: inherit;
+    }
+    input[type="text"]:focus { outline: none; border-color: #BE1337; box-shadow: 0 0 0 3px rgba(190,19,55,0.08); }
+
+    /* ── MESSAGE BOXES ── */
+    .msg-box {
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .msg-box svg { width: 14px; height: 14px; fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 1px; }
+    .msg-box p { font-size: 12px; color: #374151; line-height: 1.4; }
+    .msg-warn  { background: #fffbeb; border: 1px solid #fde68a; }
+    .msg-warn  svg { stroke: #d97706; }
+    .msg-ok    { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .msg-ok    svg { stroke: #16a34a; }
+
+    /* ── ACTIONS ── */
+    .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    .btn-back {
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 9px 20px;
+      font-size: 13px;
+      color: #374151;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-back:hover { background: #f9fafb; }
+    .btn-primary {
+      background: #BE1337;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary:hover { background: #a01030; }
+  </style>
+</head>
+<body>
+
+<!-- ── PROTOTYPE BANNER ── -->
+<div class="proto-banner">
+  <span class="proto-badge">PROTOTYPE</span>
+  <span class="proto-label">State:</span>
+  <div class="proto-states">
+    <button class="proto-state-btn active" id="btn-state-sole" onclick="switchState('sole')">Sole ownership — DD set up</button>
+    <button class="proto-state-btn" id="btn-state-split" onclick="switchState('split')">Split charges partnership</button>
+    <button class="proto-state-btn" id="btn-state-joint" onclick="switchState('joint')">Joint ownership — no DD</button>
+  </div>
+  <span class="proto-hint">Change account dropdown to explore other combinations</span>
+</div>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="logo">RD</div>
+  <div class="nav-items">
+    <button class="nav-trigger">Fixtures &amp; Races</button>
+    <button class="nav-trigger">Racecards &amp; Raceday</button>
+    <button class="nav-trigger active">Ownership</button>
+    <button class="nav-trigger">Licences</button>
+    <button class="nav-trigger">Accounts</button>
+  </div>
+  <div class="nav-right">
+    <span class="viewing-label">Viewing as</span>
+    <span class="viewing-name">John Smith</span>
+    <div class="avatar">JS</div>
+  </div>
+</nav>
+
+<!-- ── SUBNAV ── -->
+<div class="subnav">
+  <a>Horse names</a>
+  <a class="active">Search for Name</a>
+</div>
+
+<!-- ── FLOW ── -->
+<div class="flow-body">
+  <aside>
+    <div class="stepper-label">Reserve horse name</div>
+    <div class="step">
+      <div class="step-col">
+        <div class="step-dot done">✓</div>
+        <div class="step-line done"></div>
+      </div>
+      <div class="step-text done">Ownership</div>
+    </div>
+    <div class="step">
+      <div class="step-col">
+        <div class="step-dot done">✓</div>
+        <div class="step-line done"></div>
+      </div>
+      <div class="step-text done">Review</div>
+    </div>
+    <div class="step">
+      <div class="step-col">
+        <div class="step-dot active">3</div>
+      </div>
+      <div class="step-text active">Payment</div>
+    </div>
+  </aside>
+
+  <main>
+    <h2>Payment</h2>
+    <p class="page-sub">Select how you would like to pay the reservation fee.</p>
+
+    <!-- Registration summary -->
+    <div class="card">
+      <h3>Registration summary</h3>
+      <div class="review-row"><span class="lbl">Horse name</span><span class="val">Larry Long Legs</span></div>
+      <div class="review-row"><span class="lbl">Registered to</span><span class="val" id="summary-owner">John Smith (Sole Owner)</span></div>
+      <div style="margin-top: 12px;">
+        <div class="summary-row"><span class="lbl">Reservation fee</span><span>£50.00</span></div>
+        <div class="summary-row"><span class="lbl">VAT (20%)</span><span>£10.00</span></div>
+        <div class="summary-row total"><span class="lbl">Total</span><span>£60.00</span></div>
+      </div>
+    </div>
+
+    <!-- Payment method card -->
+    <div class="card">
+      <h3>Payment method</h3>
+
+      <!-- Option A: Charge to existing account — always shown -->
+      <label class="radio-row" id="row-acct" onclick="selPay('acct')">
+        <input type="radio" name="pay" id="radio-acct" checked>
+        <div style="width: 100%;">
+          <div class="rl">Charge to existing account</div>
+          <div class="sub-panel open" id="panel-acct">
+            <div class="pay-acct-panel">
+              <div class="pay-acct-help">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                Showing only ownerships where you are the named owner or have charge-account authority. To bill an account you don't see here, choose Direct Debit or Pay by card instead.
+              </div>
+              <select class="pay-acct-select" id="acct-select" onclick="event.stopPropagation()" onchange="handleAccountChange(this.value)"></select>
+              <div id="acct-detail"></div>
+            </div>
+          </div>
+        </div>
+      </label>
+
+      <!-- Option B: Set up Direct Debit — conditional on no DD mandate -->
+      <label class="radio-row is-last" id="row-dd" onclick="selPay('dd')">
+        <input type="radio" name="pay" id="radio-dd">
+        <div style="width: 100%;">
+          <div class="rl">Set up Direct Debit</div>
+          <div class="sub-panel" id="panel-dd">
+            <div class="dd-form">
+              <div class="field">
+                <label>Account name</label>
+                <input type="text" placeholder="Name on the account" onclick="event.stopPropagation()">
+              </div>
+              <div class="form-row">
+                <div class="field">
+                  <label>Sort code</label>
+                  <input type="text" placeholder="00-00-00" onclick="event.stopPropagation()">
+                </div>
+                <div class="field">
+                  <label>Account number</label>
+                  <input type="text" placeholder="00000000" onclick="event.stopPropagation()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </label>
+
+      <!-- Contextual message (DD on file / recurring payment notice) -->
+      <div id="pay-message"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-back">Back</button>
+      <button class="btn-primary">Complete payment</button>
+    </div>
+  </main>
+</div>
+
+<script>
+  var ACCOUNTS = [
+    {
+      id: 'sole-js',
+      label: 'Sole ownership \u2014 John Smith',
+      type: 'sole',
+      owner: 'John Smith',
+      hasDDMandate: true,
+      summaryLabel: 'John Smith (Sole Owner)'
+    },
+    {
+      id: 'joint-shrs',
+      label: 'Joint ownership (by shares) \u2014 Smith Racing Ltd',
+      type: 'joint',
+      owner: 'Smith Racing Ltd',
+      hasDDMandate: false,
+      shareNote: 'Single invoicing account on file',
+      summaryLabel: 'Smith Racing Ltd (Joint Ownership)'
+    },
+    {
+      id: 'split-bp',
+      label: 'Bluebell Partnership (split charges)',
+      type: 'split',
+      hasDDMandate: false,
+      summaryLabel: 'Bluebell Partnership',
+      partners: [
+        { name: 'John Smith',      role: 'Managing Partner', share: 40 },
+        { name: 'Sarah Collins',   role: 'Partner',          share: 30 },
+        { name: 'Hugh O\u2019Brien', role: 'Partner',        share: 20 },
+        { name: 'Maria Jones',     role: 'Partner',          share: 10 }
+      ]
+    },
+    {
+      id: 'split-nm',
+      label: 'Northern Mares Syndicate (split charges)',
+      type: 'split',
+      hasDDMandate: false,
+      summaryLabel: 'Northern Mares Syndicate',
+      partners: [
+        { name: 'Alan King',       role: 'Lead Partner', share: 50 },
+        { name: 'Eleanor Brown',   role: 'Partner',      share: 25 },
+        { name: 'Tom Whittaker',   role: 'Partner',      share: 25 }
+      ]
+    }
+  ];
+
+  var FEE = 60;
+  var currentPay = 'acct';
+
+  function init() {
+    var sel = document.getElementById('acct-select');
+    ACCOUNTS.forEach(function(a) {
+      var opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.label;
+      sel.appendChild(opt);
+    });
+    handleAccountChange('sole-js');
+  }
+
+  function handleAccountChange(id) {
+    renderAccountDetail(id);
+    updateDDRow(id);
+    updateSummaryOwner(id);
+    updatePayMessage(id);
+  }
+
+  function renderAccountDetail(id) {
+    var acct = ACCOUNTS.find(function(a) { return a.id === id; });
+    var host = document.getElementById('acct-detail');
+    if (!acct) { host.innerHTML = ''; return; }
+
+    if (acct.type === 'split') {
+      var rows = acct.partners.map(function(p) {
+        var amt = (FEE * p.share / 100).toFixed(2);
+        return '<li>' +
+          '<span><span class="p-name">' + p.name + '</span>' +
+          '<span class="p-meta">' + p.role + '</span></span>' +
+          '<span class="p-share">' + p.share + '% \u00b7 \u00a3' + amt + '</span>' +
+          '</li>';
+      }).join('');
+      host.innerHTML =
+        '<div class="acct-detail-split">' +
+          '<div class="split-head">' +
+            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+            '<div><strong>Charges will be split among the partners.</strong> Each partner is invoiced their share separately according to the partnership agreement on file.</div>' +
+          '</div>' +
+          '<ul class="split-partners">' + rows + '</ul>' +
+          '<div class="split-foot"><span>Total to invoice</span><span>\u00a3' + FEE.toFixed(2) + '</span></div>' +
+        '</div>';
+    } else {
+      var acctName = acct.owner || acct.label;
+      var sub = acct.shareNote ? ' \u2014 ' + acct.shareNote + '.' : '';
+      var ddBadgeHtml = acct.hasDDMandate
+        ? '<div class="dd-badge">' +
+            '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+            'Direct Debit mandate on file' +
+          '</div>'
+        : '';
+      host.innerHTML =
+        '<div class="acct-detail-single">' +
+          '<div class="acct-detail-row">' +
+            '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+            '<div>Single invoicing account: <strong>' + acctName + '</strong>. \u00a3' + FEE.toFixed(2) + ' will be charged to this account on submission.' + sub + '</div>' +
+          '</div>' +
+          ddBadgeHtml +
+        '</div>';
+    }
+  }
+
+  function updateDDRow(id) {
+    var acct = ACCOUNTS.find(function(a) { return a.id === id; });
+    var ddRow = document.getElementById('row-dd');
+    var acctRow = document.getElementById('row-acct');
+    var hasDDMandate = acct && acct.hasDDMandate;
+
+    if (hasDDMandate) {
+      // Hide DD option — mandate already exists
+      ddRow.style.display = 'none';
+      // Charge-to-account is now the last visible row
+      acctRow.classList.add('is-last');
+      // If DD was selected, force back to account
+      if (currentPay === 'dd') { selPay('acct'); }
+    } else {
+      ddRow.style.display = 'flex';
+      acctRow.classList.remove('is-last');
+    }
+  }
+
+  function updateSummaryOwner(id) {
+    var acct = ACCOUNTS.find(function(a) { return a.id === id; });
+    if (acct) {
+      document.getElementById('summary-owner').textContent = acct.summaryLabel;
+    }
+  }
+
+  function updatePayMessage(id) {
+    var acct = ACCOUNTS.find(function(a) { return a.id === id; });
+    var msgEl = document.getElementById('pay-message');
+    if (acct && acct.hasDDMandate) {
+      msgEl.innerHTML =
+        '<div class="msg-box msg-ok">' +
+          '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+          '<p>This account has a Direct Debit mandate on file. Annual renewal charges will be collected automatically.</p>' +
+        '</div>';
+    } else {
+      msgEl.innerHTML =
+        '<div class="msg-box msg-warn">' +
+          '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+          '<p>A recurring payment method is required for name reservations. This will be used for the initial fee and any annual renewal charges.</p>' +
+        '</div>';
+    }
+  }
+
+  function selPay(type) {
+    currentPay = type;
+    var panelAcct = document.getElementById('panel-acct');
+    var panelDD   = document.getElementById('panel-dd');
+    if (type === 'acct') {
+      document.getElementById('radio-acct').checked = true;
+      panelAcct.classList.add('open');
+      panelDD.classList.remove('open');
+    } else {
+      document.getElementById('radio-dd').checked = true;
+      panelAcct.classList.remove('open');
+      panelDD.classList.add('open');
+    }
+  }
+
+  // ── Prototype state switcher ──
+  function switchState(state) {
+    var stateMap = { sole: 'sole-js', split: 'split-bp', joint: 'joint-shrs' };
+    var id = stateMap[state];
+    var sel = document.getElementById('acct-select');
+    sel.value = id;
+    handleAccountChange(id);
+    selPay('acct');
+
+    // Update banner buttons
+    document.querySelectorAll('.proto-state-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('btn-state-' + state).classList.add('active');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
